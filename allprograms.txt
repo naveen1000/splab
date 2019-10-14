@@ -1,0 +1,222 @@
+2.........................................DFT.............................
+clc;
+clear all;
+close all;
+f=100;
+ts=1/(20*f);
+fs=1/ts;
+t=0:ts:1;
+x=sin(2*f*pi*t);
+L=length(x);
+N=2^nextpow2(L);
+x=[x zeros(1,(N-L))];
+for k=0:N-1
+    sum=0;
+    for n=0:N-1
+    sum=sum+x(n+1)*exp((-2i*pi*n*k)/N);
+    
+    end
+    X(k+1)=sum;
+end
+f=(fs/2)*linspace(0,1,(N/2)+1);
+figure,plot(f,abs(X(1:(N/2)+1)));
+3...................................butterWorth..................
+clc;
+close all;
+clear all;
+wp=0.2*pi;
+ws=0.3*pi;
+ap=1;
+as=16;
+l=(10^(0.1*ap)-1);
+p=(10^(0.1*as)-1);
+k=(p/l)^0.5;
+k=log(k);
+e=log(ws/wp);
+N=ceil(k/e);
+w=linspace(0,pi,100);
+wc=(wp/(l)^(1/(2*N)));
+for i=1:100
+    h(i)=20*log((1/(1+(w(i)/wc)^(2*N)))^0.5);
+end
+plot(w,h);
+4.....................cheybshv...............
+clc;
+close all;
+clear all;
+ws=0.3*pi;
+wp=0.2*pi;
+ap=3;
+as=16;
+wr=ws/wp;
+A=10^(as/20);
+e=(10^(0.1*ap)-1)^0.5;
+g=((((A^2)-1)/(e^2))^0.5);
+k=log10(g+((g^2)-1)^0.5);
+k1=log10(wr+((wr^2)-1)^0.5);
+n=ceil(k/k1);
+wc=wp/(e^(1/(2*n)));
+w=linspace(0,pi,100);
+for i=1:length(w)
+    x=w(i)/wc;
+    if(x>=0&&x<=1)
+        tn=cos(n*acos(x));
+    else
+        tn=cosh(acosh(x));
+    end
+    h(i)=((1/(1+((e^2)*(tn^2)*x)))^0.5);
+    h1(i)=20*log10((1/(1+(e^2)*(tn^2)*(x)))^0.5);
+end
+plot(w,h);
+figure,plot(w,h1);
+5...................digi cheybshv....................
+clc;
+close all;
+clear all;
+ws=3*pi;
+wp=2*pi;
+ap=1;
+as=16;
+ws1=2*tan(90*ws);
+wp1=2*tan(90*wp);
+A=10^(as/20);
+wr=ws/wp;
+e=(10^(0.1*ap)-1)^0.5;
+g=((((A^2)-1)/(e^2))^0.5);  
+k1=log10(g+((g^2)-1)^0.5);
+k2=log10(wr+((wr^2)-1)^0.5);
+n=ceil(k1/k2);
+wc=wp/(e^(1/(2*n)));
+mu=(e^-1)+(((e^2)+1))^0.5;
+a=((mu^(1/n))-(mu^(-1/n)))*wp1/2;
+b=((mu^(1/n))+(mu^(-1/n)))*wp1/2;
+for K=1:n
+    p=pi/2+((2*K-1)*pi/(2*n));
+     s(K)=a*cos(p)+1j*b*sin(p);
+end
+w=linspace(0,pi/2,100);
+for i=1:length(w)
+    p=4*((1-exp(-1j*w(i)))^2)+0.3628*(1-exp(-2j*w(i)))+0.416*(1+exp(-1j*w(i)))^2;
+     q=4*((1-exp(-1j*w(i)))^2)+0.8756*(1-exp(-2j*w(i)))+0.1084*(1+exp(-1j*w(i)))^2;
+     k=0.0401*(1+exp(-1j*w(i)))^4;
+     h(i)=20*log10(abs(k/(p*q)));
+end
+plot(w,h)
+.......................sharpening 
+clc;
+clear all;
+close all;
+I=imread('cameraman.tif')
+J=double(I);
+[r,c]=size(J);
+Mask=[1 1 1;1 -8 1;1 1 1]
+J1=J;
+for i=2:r-1
+    for j=2:c-1
+        A=J(i-1:i+1,j-1:j+1);
+        AM=A.*Mask;
+        S=sum(AM(:));
+        J1(i,j)=S;
+    end
+end
+    subplot(1,2,1);
+    imshow(I);
+    subplot(1,2,2);
+    imshow((uint8(J1)));
+    
+   ...........................................strching...............
+clc;
+close all;
+clear all;
+a=imread('pout.tif');
+j=double(a);
+imshow(a);
+smax=255;
+smin=0;
+rmax=max(j(:));
+rmin=min(j(:));
+s= ((smax-smin)/(rmax-rmin))*(j-rmin)+smin;
+p=log(1+j)
+p1=j.^0.2;
+figure,imshow(s,[]);
+figure,imshow(p,[]);
+figure,imshow(p1,[]);
+....................................edge...............
+
+clc;
+close all;
+clear all;
+a=imread('cameraman.tif');
+j=double(a);
+[r c]=size(j);
+mask1=[-1 -2 -1;0 0 0;1 2 1];
+mask2=[-1 0 1;-2 0 2;-1 0 1]
+j1=j;
+for i=2:r-1
+    for k=2:c-1
+        A=j(i-1:i+1,k-1:k+1);
+        Am=A.*mask1;
+        am=A.*mask2;
+        j1(i,k)=abs(sum(Am(:)))+abs(sum((am(:))));
+    end
+end
+imshow(a);
+figure,imshow(uint8(j1));
+.......................................kaiser...................
+%Aim of the experiment: Write a MATLAB program to plot 
+%the frequency response of low pass filter using Kaiser window.
+ 
+clc
+clear all
+close all
+
+% Given specification
+wp=0.2*pi;
+ws=0.3*pi;
+As=50;
+%parameter calculation for Kaiser window
+ delf=(ws-wp)/(2*pi);
+ M=ceil(((As-7.95)/(14.36*delf))+1)+1;
+ n = 0:1:(M-1);
+ beta=0.1102*(As-8.7);
+ wc=(ws+wp)/2;%cut-off frequency
+ 
+ %Computation of Kaiser window function
+ for n=0:M-1
+    k=beta*sqrt(1-((1-((2*n)/(M-1)))^2));
+    w(n+1)=besseli(0,k)/besseli(0,beta);
+ end
+subplot(2,2,1)
+plot(w)
+xlabel('n')
+ylabel('wk(n)');
+title('Kaiser window')
+ 
+%Ideal Loe-pass filter computation
+alpha=(M-1)/2;
+n=0:M-1;
+m = n - alpha + 0.0001;
+hd = sin(wc*m)./(pi*m);
+subplot(2,2,2)
+plot(hd);
+xlabel('n')
+ylabel('hd(n)')
+title('impulse response of ideal low-pass filter')
+ 
+%impulse response of linear-phase and causal FIR filter 
+%computed by truncate the impulse response of ideal filter
+%by Kaiser window function
+h=hd.*w;
+subplot(2,2,3)
+plot(h)
+xlabel('n')
+ylabel('h(n)')
+title('impulse response of desired FIR low-pass filter')
+%Magnitude response in frequency domain  (dB)
+[Mag,Freq]=freqz(h);
+Mag_db=20*log10(abs(Mag));
+subplot(2,2,4)
+plot(Freq,Mag_db)
+xlabel('Frequency in rad')
+ylabel('Magnitude(dB)')
+title('Frequency reponse of desired FIR Low-pass filter')
